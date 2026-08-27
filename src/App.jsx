@@ -1447,6 +1447,109 @@ function Ficha({ ficha, setFicha, M, res, par, sol }) {
   );
 }
 
+/* ══════════════════════════════════════════════════════════════════
+   8c. AYUDA (instrucciones del proyecto, contenido del README)
+   ══════════════════════════════════════════════════════════════════ */
+const CONTENIDO_TABS = [
+  ["Predio y recursos", "Superficie total, volumen de riego, presupuesto y las reglas opcionales (tope de sobrefertilización, nitrógeno orgánico mínimo, existencias). Incluye el mapa de la parcela."],
+  ["Cultivos", "Ocho cultivos precargados con margen bruto, lámina de riego, requerimientos de N, P₂O₅ y K₂O en t/ha, y áreas mínima y máxima. Todo editable."],
+  ["Fertilizantes", "Nueve productos con marca, grado, aporte por tonelada, precio y existencia, más el costo efectivo por tonelada de nutriente."],
+  ["Asociaciones", "Reglas del tipo xₐ ≤ k·x_b para modelar milpa, intercalado o compromisos de mercado."],
+  ["Formulación matemática", "El modelo en notación general: conjuntos, parámetros, once ecuaciones numeradas con su explicación didáctica, forma matricial y estándar, y los cuatro supuestos de la programación lineal."],
+  ["Modelo con tus datos", "Las mismas restricciones desarrolladas con los números capturados, marcando cuáles quedaron activas."],
+  ["Solución", "Plan óptimo, mapa del predio, gráficas, balance de nutrientes, análisis de sensibilidad con precios sombra y comparación de escenarios."],
+  ["Ficha y reporte", "Datos del técnico, del productor y del predio, y generación de un reporte imprimible en PDF con interpretación automática de los resultados."],
+];
+
+function Ayuda() {
+  return (
+    <div className="grid grid-cols-1 gap-4">
+      <Card title="Qué es Agro-Plex" hint="Instrucciones y contexto del proyecto, para consultar sin salir de la aplicación.">
+        <div className="pad" style={{ display: "grid", gap: 10, fontSize: 13, lineHeight: 1.65 }}>
+          <p><b>Plan de siembra y fertilización por programación lineal.</b> Aplicación web didáctica
+            que resuelve, con el método símplex de dos fases y directamente en el navegador, el
+            problema de decidir <i>qué sembrar y con qué fertilizar</i> en un predio: cuántas hectáreas
+            dedicar a cada cultivo y cuántas toneladas comprar de cada marca y fórmula de fertilizante,
+            para maximizar la utilidad neta del ciclo sujeta a la tierra, el agua de riego, el
+            presupuesto, las existencias del proveedor y los requerimientos nutricionales de cada
+            cultivo.</p>
+          <p className="hint">Sitio publicado: <a href="https://gusorh.github.io/agro-plex/" target="_blank" rel="noreferrer">gusorh.github.io/agro-plex</a></p>
+          <p className="hint">Material del proyecto educativo innovador para las experiencias educativas
+            <b> Matemáticas</b>, <b>Nutrición Vegetal</b> y <b>Diagnóstico de Sistemas Productivos</b> del
+            programa de Ingeniero Agrónomo, Facultad de Ciencias Agrícolas, Universidad Veracruzana.</p>
+        </div>
+      </Card>
+
+      <Card title="Qué contiene cada pestaña" hint="Recorrido rápido por la aplicación, en el mismo orden en que aparecen arriba.">
+        <div className="pad scroll">
+          <table className="t">
+            <thead><tr><th>Pestaña</th><th>Para qué sirve</th></tr></thead>
+            <tbody>
+              {CONTENIDO_TABS.map(([t, d]) => (
+                <tr key={t}><td style={{ fontWeight: 600, whiteSpace: "nowrap" }}>{t}</td><td>{d}</td></tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      </Card>
+
+      <Card title="El modelo" hint="Variables de decisión: xᵢ hectáreas del cultivo i, yⱼ toneladas del fertilizante j (o yᵢⱼ en el modo de balance por cultivo).">
+        <div className="pad">
+          <pre className="math mono" style={{ whiteSpace: "pre-wrap", textAlign: "left", fontSize: 12.5 }}>
+{`máx Z = ∑ᵢ uᵢ xᵢ − ∑ⱼ cⱼ yⱼ
+
+sujeto a:
+  ∑ᵢ xᵢ ≤ S                          superficie del predio
+  ∑ᵢ aᵢ xᵢ ≤ A                       agua de riego del ciclo
+  ∑ⱼ pⱼₖ yⱼ ≥ ∑ᵢ rᵢₖ xᵢ    ∀ k ∈ K   balance de N, P₂O₅ y K₂O
+  ∑ⱼ pⱼₖ yⱼ ≤ (1+τ) ∑ᵢ rᵢₖ xᵢ ∀ k    tope de sobrefertilización (opcional)
+  ∑ⱼ∈O pⱼN yⱼ ≥ β ∑ᵢ rᵢN xᵢ          nitrógeno de origen orgánico (opcional)
+  ∑ⱼ cⱼ yⱼ ≤ B                       presupuesto de fertilizante
+  yⱼ ≤ Dⱼ                  ∀ j ∈ J   existencias del proveedor
+  mᵢ ≤ xᵢ ≤ Mᵢ             ∀ i ∈ I   áreas mínima y máxima
+  xₐ − kₐᵦ x_b ≤ 0        ∀ (a,b)    asociación entre cultivos
+  xᵢ, yⱼ ≥ 0`}
+          </pre>
+          <p className="hint" style={{ marginTop: 10 }}>Todas las unidades de fertilizante están en
+            toneladas; los requerimientos, en toneladas de nutriente por hectárea (0.16 t/ha = 160 kg/ha).
+            Puedes ver esta misma formulación desarrollada paso a paso, con explicación didáctica de
+            cada ecuación, en la pestaña <b>Formulación matemática</b>.</p>
+        </div>
+      </Card>
+
+      <Card title="Adaptar los datos a tu predio" hint="Los cultivos, fertilizantes y reglas precargados son ilustrativos, calibrados para condiciones de la zona centro de Veracruz.">
+        <div className="pad" style={{ display: "grid", gap: 8, fontSize: 13, lineHeight: 1.6 }}>
+          <p>Todo se edita desde la propia interfaz, sin tocar código: cambia los valores en las pestañas
+            <b> Predio y recursos</b>, <b>Cultivos</b>, <b>Fertilizantes</b> y <b>Asociaciones</b>, y el
+            plan óptimo se recalcula al instante.</p>
+          <div className="alerta">
+            El modelo <b>no descuenta el nutriente que ya aporta el suelo</b>, no considera eficiencias
+            de aplicación ni pérdidas por lixiviación o volatilización, y toma precios y rendimientos
+            como datos ciertos. Las dosis que arroja deben contrastarse contra un análisis de suelo
+            vigente y el criterio del responsable técnico.
+          </div>
+        </div>
+      </Card>
+
+      <Card title="Créditos y licencia">
+        <div className="pad" style={{ display: "grid", gap: 8, fontSize: 13, lineHeight: 1.6 }}>
+          <p><b>Cuerpo académico {CREDITOS.ca}</b> ({CREDITOS.clave})<br />
+            Facultad de Ciencias Agrícolas · Universidad Veracruzana</p>
+          <ul style={{ margin: 0, paddingLeft: 18 }}>
+            {CREDITOS.integrantes.map((p) => (
+              <li key={p.m}>{p.n} — <a href={"mailto:" + p.m}>{p.m}</a></li>
+            ))}
+          </ul>
+          <p className="hint">Código bajo licencia MIT (ver <span className="mono">LICENSE</span> en el
+            repositorio). El logotipo y la identidad de la Facultad de Ciencias Agrícolas y de la
+            Universidad Veracruzana son propiedad de la institución y no quedan cubiertos por esa
+            licencia.</p>
+        </div>
+      </Card>
+    </div>
+  );
+}
+
 /* ── banda de créditos institucional ─────────────────────────────── */
 function BandaCreditos() {
   return (
@@ -1530,6 +1633,7 @@ export default function App() {
     ["modelo", "Modelo con tus datos"],
     ["sol", "Solución"],
     ["ficha", "Ficha y reporte"],
+    ["ayuda", "Ayuda"],
   ];
 
   return (
@@ -1827,6 +1931,9 @@ export default function App() {
 
         {/* ══════ FICHA Y REPORTE ══════ */}
         {tab === "ficha" && <Ficha ficha={ficha} setFicha={setFicha} M={M} res={res} par={par} sol={sol} />}
+
+        {/* ══════ AYUDA ══════ */}
+        {tab === "ayuda" && <Ayuda />}
 
       </main>
 
